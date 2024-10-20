@@ -1,45 +1,58 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 
-mongoose.connect("mongodb+srv://aditya:aditya@cluster0.ntkoj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology:true
+    useUnifiedTopology: true
 })
-    .then(() => console.log("Connect to DB"))
-    .catch(console.error);
+.then(() => console.log("Connected to DB"))
+.catch(err => console.error("Database connection error:", err));
 
 const Todo = require('./models/Todo');
 
+// Get all todos
 app.get('/todos', async (req, res) => {
-    const todos = await Todo.find();
-
-    res.json(todos);
+    try {
+        const todos = await Todo.find();
+        res.json(todos);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
+// Create a new todo
 app.post('/todo/new', async (req, res) => {
-    const todo = await new Todo({
-        text: req.body.text
-    });
-
-    todo.save();
-
-    res.json(todo);
+    try {
+        const todo = new Todo({
+            text: req.body.text
+        });
+        await todo.save();
+        res.json(todo);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
+// Delete a todo
 app.delete('/todo/delete/:id', async (req, res) => {
-    const result = await Todo.findByIdAndDelete(req.params.id);
-
-    res.json(result);
+    try {
+        const result = await Todo.findByIdAndDelete(req.params.id);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
-
+// Toggle completion status of a todo
 app.get('/todo/complete/:id', async (req, res) => {
     try {
         const todo = await Todo.findById(req.params.id);
@@ -57,5 +70,5 @@ app.get('/todo/complete/:id', async (req, res) => {
     }
 });
 
-
+// Start the server
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
