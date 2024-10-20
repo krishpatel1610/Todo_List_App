@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import './App.css'; // Link to your CSS file
 
-const API_BASE = "http://localhost:3001";  // Define the API_BASE here
+const API_BASE = "https://todo-list-app-29sd.onrender.com";  // Define the API_BASE here
 
 function App() {
   const [todos, setTodos] = useState([]);
